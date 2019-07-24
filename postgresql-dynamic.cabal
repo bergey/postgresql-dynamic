@@ -3,8 +3,8 @@ name:                postgresql-dynamic
 version:             0.1.0.0
 synopsis:            Read rows from Postgres into 'Map Text Dynamic'
 description: Load all columns returned by Postgres into a generic key-value map.  This is useful for interactive development, when exploring the database schema, or before it's clear which columns will be needed.
-homepage:            github.com/bergey/postgresql-dynamic
-bug-reports:    github.com/bergey/postgresql-dynamic/issues
+homepage:            https://github.com/bergey/postgresql-dynamic
+bug-reports:    https://github.com/bergey/postgresql-dynamic/issues
 license:             BSD-3-Clause
 license-file:        LICENSE
 author:              Daniel Bergey
@@ -14,21 +14,21 @@ category:            Database
 
 Source-repository head
   type:     git
-  location: http://github.com/bergey/STL.git
+  location: http://github.com/bergey/postgresql-dynamic.git
 
 library
   exposed-modules: Database.PostgreSQL.Simple.Dynamic
   -- other-modules:
   -- other-extensions:
-  build-depends:       base >= 4.9 && < 4.13
-                       , postgresql-simple ^>= 0.6
-                     , containers
-                     , uuid
-                     , text
-                     , transformers
-                     , aeson
-                     , bytestring
-                     , time
-                     , postgresql-libpq
+  build-depends:       base >= 4.11 && < 4.13
+                     , aeson ^>= 1.4.2.0
+                     , bytestring ^>= 0.10.8.2
+                     , containers >= 0.5.11.0 && < 0.7
+                     , postgresql-libpq ^>= 0.9.4.2
+                     , postgresql-simple ^>= 0.6.2
+                     , text ^>= 1.2.3.1
+                     , time ^>= 1.8.0.2
+                     , transformers ^>= 0.5.5.0
+                     , uuid ^>= 1.3.13
   hs-source-dirs:      src
   default-language:    Haskell2010
