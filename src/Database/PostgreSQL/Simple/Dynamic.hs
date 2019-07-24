@@ -51,13 +51,16 @@ instance JSON.ToJSON DynamicDecodeError where
     toJSON dde = JSON.object [ "column" .= dde_column dde, "type" .= enc (dde_type dde), "value" .= fmap enc (dde_value dde) ] where
       enc = T.decodeUtf8With T.lenientDecode
 
+columnNameOrNumber :: Field -> Text
+columnNameOrNumber field = case name field of
+    Just name -> T.decodeUtf8With T.lenientDecode name
+    Nothing -> T.pack (show c) where
+        (PQ.Col c) = column field
+
 dynamicParser :: FieldParser (T.Text, Dynamic)
 dynamicParser field m_value = do
     let
-        columnName = case name field of
-            Just name -> T.decodeUtf8With T.lenientDecode name
-            Nothing -> T.pack (show c) where
-              (PQ.Col c) = column field
+        columnName = columnNameOrNumber field
         getField :: forall a. (FromField a, Typeable a) => Conversion Dynamic
         getField = toDyn <$> (fromField field m_value :: Conversion a)
     ty <- typename field
@@ -91,7 +94,20 @@ dynamicParser field m_value = do
         _ -> Conversion (\_ -> return $ Errors [toException (DynamicDecodeError columnName ty m_value)])
     return (columnName, value)
 
-instance FromRow (M.Map T.Text Dynamic) where
-    fromRow = do
+-- | To extend the 'FromRow' instance with additional types (without contributing the addition upstream), you can use @fromRowToDynamicWith@:
+-- >    newtype DbRow = DbRow (Map Text Dynamic)
+-- >    instance FromRow DbRow where
+-- >        fromRow = fromRowToDynamicWith (\field value -> do
+-- >            ty <- typename field
+-- >            m_value <- case ty of
+-- >                "obscureType" -> fmap toDyn (fromField field m_value :: Conversion ObscureType)
+-- >                _ -> DbRow <$> dynamicParser field value
+-- >                                       )
+
+fromRowToDynamicWith :: FieldParser (T.Text, Dynamic) -> RowParser (M.Map T.Text Dynamic)
+fromRowToDynamicWith fieldParser = do
         (PQ.Col ncols) <- unsafeDupablePerformIO . PQ.nfields . rowresult <$> RP ask
-        M.fromList <$> replicateM (fromIntegral ncols) (fieldWith dynamicParser)
+        M.fromList <$> replicateM (fromIntegral ncols) (fieldWith fieldParser)
+
+instance FromRow (M.Map T.Text Dynamic) where
+    fromRow = fromRowToDynamicWith dynamicParser
