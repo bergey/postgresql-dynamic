@@ -82,7 +82,7 @@ dynamicParser field m_value = do
         "text" -> getField @Text
         "char"-> getField @Text
         "varchar"-> getField @Text
-        -- "uuid" -> getField @UUID
+        "uuid" -> getField @UUID
         "timestamptz" -> getField @UTCTime
         "timestamp"-> getField @LocalTime
         "date" -> getField @Day
