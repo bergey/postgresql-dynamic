@@ -10,7 +10,7 @@ module Database.PostgreSQL.Simple.Dynamic where
 import           Control.Exception (Exception, toException)
 import           Control.Monad
 import           Control.Monad.Trans.Reader
-import           Data.Aeson (Value)
+import           Data.Aeson (Value, (.=))
 import           Data.ByteString (ByteString)
 import           Data.Dynamic
 import           Data.Int
@@ -24,6 +24,7 @@ import           Database.PostgreSQL.Simple.Internal (Conversion(..), Field(..),
 import           Database.PostgreSQL.Simple.Ok (Ok(..))
 import           System.IO.Unsafe (unsafeDupablePerformIO)
 
+import qualified Data.Aeson as JSON
 import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -45,6 +46,10 @@ data DynamicDecodeError = DynamicDecodeError
     } deriving (Eq, Show, Typeable)
 
 instance Exception DynamicDecodeError
+
+instance JSON.ToJSON DynamicDecodeError where
+    toJSON dde = JSON.object [ "column" .= dde_column dde, "type" .= enc (dde_type dde), "value" .= fmap enc (dde_value dde) ] where
+      enc = T.decodeUtf8With T.lenientDecode
 
 dynamicParser :: FieldParser (T.Text, Dynamic)
 dynamicParser field m_value = do
