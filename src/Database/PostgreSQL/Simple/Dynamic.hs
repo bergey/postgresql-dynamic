@@ -39,9 +39,9 @@ o m k = fromDynamic =<< M.lookup k m
 
 -- | Exception thrown if an unknown Postgres type is encountered while decoding to Dynamic.
 data DynamicDecodeError = DynamicDecodeError
-    { columnName :: !T.Text
-    , typeName :: !ByteString
-    , value :: !(Maybe ByteString)
+    { dde_column :: !T.Text
+    , dde_type :: !ByteString
+    , dde_value :: !(Maybe ByteString)
     } deriving (Eq, Show, Typeable)
 
 instance Exception DynamicDecodeError
@@ -84,7 +84,6 @@ dynamicParser field m_value = do
         "time" -> getField @TimeOfDay
         -- TODO interval
         _ -> Conversion (\_ -> return $ Errors [toException (DynamicDecodeError columnName ty m_value)])
-        -- TODO what to do with unknown field types?  Catchable Exception.
     return (columnName, value)
 
 instance FromRow (M.Map T.Text Dynamic) where
