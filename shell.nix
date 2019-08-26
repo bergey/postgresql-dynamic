@@ -22,4 +22,10 @@ let
 
 in
 
-    if pkgs.lib.inNixShell then drv.env else drv
+if !pkgs.lib.inNixShell then drv else
+  pkgs.stdenv.mkDerivation {
+    name = "haskell-env";
+    buildInputs = drv.env.nativeBuildInputs ++ [
+      haskellPackages.hpack
+    ];
+  }
