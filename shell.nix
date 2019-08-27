@@ -27,5 +27,6 @@ if !pkgs.lib.inNixShell then drv else
     name = "haskell-env";
     buildInputs = drv.env.nativeBuildInputs ++ [
       haskellPackages.hpack
+      haskellPackages.cabal-install
     ];
   }
